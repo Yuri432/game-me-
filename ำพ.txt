@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เกมรถแข่ง (Car Racing)</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #222; color: #fff; }
+        canvas { border: 2px solid #555; background-color: #333; display: block; margin: 20px auto; }
+    </style>
+</head>
+<body>
+    <h1>เกมรถแข่ง (Simple Car Racing)</h1>
+    <canvas id="carCanvas" width="300" height="600"></canvas>
+    <p>คะแนน (หลบได้): <span id="carScore">0</span> | สถานะ: <span id="carStatus">ใช้ปุ่มซ้าย/ขวาเพื่อขับ</span></p>
+    <button onclick="window.location.href='index.html'">กลับเมนูเกม</button>
+
+    <script>
+        const canvas = document.getElementById('carCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let score = 0;
+        let carX = canvas.width / 2 - 25; // ตำแหน่งเริ่มต้น
+        const carY = canvas.height - 60;
+        const carWidth = 50;
+        const carHeight = 50;
+        let obstacles = [];
+        let gameLoopInterval = null;
+        let gameRunning = false;
+        
+        const roadLineY = 0; // ตำแหน่งถนน
+        let lineSpeed = 5;
+
+        function draw() {
+            // Clear screen & draw road
+            ctx.fillStyle = '#666';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw center road line (scrolling effect)
+            ctx.fillStyle = 'yellow';
+            for (let i = roadLineY; i < canvas.height; i += 30) {
+                ctx.fillRect(canvas.width / 2 - 5, i, 10, 20);
+            }
+
+            // Draw Player Car
+            ctx.fillStyle = 'red';
+            ctx.fillRect(carX, carY, carWidth, carHeight);
+
+            // Draw Obstacles
+            ctx.fillStyle = 'blue';
+            obstacles.forEach(obs => {
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            });
+        }
+
+        function update() {
+            // Scroll road lines
+            roadLineY += lineSpeed;
+            if (roadLineY >= 30) {
+                roadLineY = 0;
+            }
+
+            // Move Obstacles
+            obstacles.forEach(obs => obs.y += lineSpeed * 1.5);
+
+            // Collision Detection
+            for (let i = 0; i < obstacles.length; i++) {
+                const obs = obstacles[i];
+                if (carX < obs.x + obs.width &&
+                    carX + carWidth > obs.x &&
+                    carY < obs.y + obs.height &&
+                    carY + carHeight > obs.y) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            // Remove passed obstacles and score
+            obstacles = obstacles.filter(obs => {
+                if (obs.y > canvas.height) {
+                    score++;
+                    document.getElementById('carScore').textContent = score;
+                    return false; // Remove
+                }
+                return true;
+            });
+
+            // Spawn new obstacles
+            if (Math.random() < 0.03) { // Chance to spawn
+                const side = Math.random() < 0.5 ? 0 : canvas.width - 50; // Left or Right lane
+                obstacles.push({
+                    x: Math.random() < 0.5 ? (canvas.width / 2 - 75) : (canvas.width / 2 + 25), // Force spawn left or right lane
+                    y: -50,
+                    width: 50,
+                    height: 50
+                });
+            }
+        }
+        
+        function gameLoop() {
+            update();
+            draw();
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            score = 0;
+            obstacles = [];
+            document.getElementById('carScore').textContent = score;
+            document.getElementById('carStatus').textContent = 'กำลังเล่น...';
+            gameLoopInterval = setInterval(gameLoop, 33); // ~30 FPS
+            gameRunning = true;
+        }
+
+        function gameOver() {
+            clearInterval(gameLoopInterval);
+            gameLoopInterval = null;
+            gameRunning = false;
+            document.getElementById('carStatus').textContent = 'ชนแล้ว! กด Spacebar เพื่อเริ่มใหม่';
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft' && carX > 0) {
+                carX -= 15;
+            } else if (event.key === 'ArrowRight' && carX < canvas.width - carWidth) {
+                carX += 15;
+            } else if ((event.code === 'Space' || event.key === ' ') && !gameRunning) {
+                startGame();
+            }
+        });
+
+        draw(); // Initial draw
+    </script>
+</body>
+</html>
