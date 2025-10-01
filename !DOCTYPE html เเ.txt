@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เกมทายตัวเลข</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f0f0; }
+        #game-area { margin-top: 50px; }
+    </style>
+</head>
+<body>
+    <h1>เกมทายตัวเลข (Number Guessing Game)</h1>
+    <p id="message">ฉันสุ่มตัวเลข 1-100 แล้ว! ลองทายสิ!</p>
+    <input type="number" id="guessInput" min="1" max="100">
+    <button onclick="checkGuess()">ทาย!</button>
+    <p>จำนวนครั้งที่ทาย: <span id="attempts">0</span></p>
+    <button onclick="window.location.href='index.html'">กลับเมนูเกม</button>
+
+    <script>
+        let targetNumber = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
+        
+        function checkGuess() {
+            const guess = parseInt(document.getElementById('guessInput').value);
+            const message = document.getElementById('message');
+            const attemptsDisplay = document.getElementById('attempts');
+
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                message.textContent = "กรุณาใส่ตัวเลขระหว่าง 1 ถึง 100!";
+                return;
+            }
+
+            attempts++;
+            attemptsDisplay.textContent = attempts;
+
+            if (guess === targetNumber) {
+                message.textContent = `ยินดีด้วย! ทายถูกคือ ${targetNumber} ใน ${attempts} ครั้ง!`;
+            } else if (guess < targetNumber) {
+                message.textContent = "ต่ำเกินไป! ลองทายอีกครั้ง";
+            } else {
+                message.textContent = "สูงเกินไป! ลองทายอีกครั้ง";
+            }
+        }
+    </script>
+</body>
+</html>
