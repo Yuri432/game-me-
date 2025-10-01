@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Dino Runner (Web Version)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>เกม Dino Runner</h1>
+    <div id="game-container">
+        <pre id="game-display"></pre>
+        <div id="info-bar">
+            คะแนน: <span id="score">0</span> | เงิน: <span id="coins">0</span> | สถานะ: <span id="status">กด Spacebar เพื่อเริ่ม</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
