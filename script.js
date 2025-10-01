@@ -1,147 +1,173 @@
-const GAME_SPEED = 60; // ความหน่วง (ms)
-const GROUND_Y = 10;   
-const DISPLAY_WIDTH = 80;
-const DISPLAY_HEIGHT = 15;
+// 1. กำหนดตัวแปร Canvas และสถานะเกม
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const GAME_WIDTH = canvas.width;
+const GAME_HEIGHT = canvas.height;
+const GROUND_Y = GAME_HEIGHT - 50; 
 
 let score = 0;
 let coins = 0;
-let dinoY = GROUND_Y;
 let isJumping = false;
-let jumpVelocity = 0;
-let obstacleX = DISPLAY_WIDTH - 1;
-let gameLoopInterval;
+let velocityY = 0;
+let positionY = GROUND_Y;
+let obstacleX = GAME_WIDTH;
+let gameLoopInterval = null;
+let gameRunning = false;
 
-const display = document.getElementById('game-display');
-const scoreElement = document.getElementById('score');
-const coinsElement = document.getElementById('coins');
-const statusElement = document.getElementById('status');
+// 2. โหลดรูปภาพ
+const dinoImg = new Image();
+dinoImg.src = 'character.png'; 
+const obstacleImg = new Image();
+obstacleImg.src = 'obstacle.png'; 
+const backgroundImg = new Image();
+backgroundImg.src = 'background.jpg'; // ฉากหลัง
 
-// สร้าง Skin Dino 
-function getDinoShape(y) {
-    if (y < GROUND_Y) {
-        // กระโดด
-        return [
-            " _ ",
-            "/|\\",
-            "/ \\"
-        ];
-    } else {
-        // วิ่งบนพื้น
-        return [
-            " _ ",
-            "/|\\",
-            "| |"
-        ];
+// รอให้รูปภาพโหลดก่อนเริ่มวาด (สำคัญสำหรับเกมกราฟิก)
+let assetsLoaded = false;
+let imagesToLoad = 3; 
+
+function assetLoaded() {
+    imagesToLoad--;
+    if (imagesToLoad === 0) {
+        assetsLoaded = true;
+        draw(); // วาดหน้าจอเริ่มต้น
     }
 }
 
-// 1. วาดหน้าจอ
-function drawScreen() {
-    let grid = Array(DISPLAY_HEIGHT).fill().map(() => Array(DISPLAY_WIDTH).fill(' '));
+dinoImg.onload = assetLoaded;
+obstacleImg.onload = assetLoaded;
+backgroundImg.onload = assetLoaded;
 
-    // วาดพื้น
-    for (let x = 0; x < DISPLAY_WIDTH; x++) {
-        grid[GROUND_Y + 1][x] = '_';
-    }
+// 3. ฟังก์ชันการวาด
+function draw() {
+    if (!assetsLoaded) return;
+    
+    // วาดพื้นหลัง (ใช้รูปภาพ)
+    // การใช้ repeat-x หรือการวาดหลายครั้งเพื่อจำลองการเลื่อนฉากหลัง (Parallax)
+    ctx.drawImage(backgroundImg, 0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    // วาดอุปสรรค
-    if (obstacleX >= 0 && obstacleX < DISPLAY_WIDTH) {
-        grid[GROUND_Y][obstacleX] = '#';
-    }
+    // วาดพื้นดิน
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, GROUND_Y + 5, GAME_WIDTH, 50);
 
-    // วาด Dino
-    const dinoShape = getDinoShape(dinoY);
-    for (let i = 0; i < dinoShape.length; i++) {
-        for (let j = 0; j < dinoShape[i].length; j++) {
-            if (dinoShape[i][j] !== ' ') {
-                grid[dinoY - dinoShape.length + 1 + i][5 + j] = dinoShape[i][j]; 
-            }
-        }
-    }
-
-    // แปลง Grid เป็น String เพื่อแสดงผล
-    display.textContent = grid.map(row => row.join('')).join('\n');
+    // วาดตัวละคร (ใช้รูปภาพ)
+    ctx.drawImage(dinoImg, 50, positionY - 50, 50, 50); 
+    
+    // วาดสิ่งกีดขวาง (ใช้รูปภาพ)
+    ctx.drawImage(obstacleImg, obstacleX, GROUND_Y - 30, 30, 30); 
 }
 
-// 2. จัดการการกระโดด
-function updateJump() {
-    if (isJumping) {
-        dinoY -= jumpVelocity;
-        jumpVelocity -= 1; // แรงโน้มถ่วง
-
-        if (dinoY >= GROUND_Y) {
-            dinoY = GROUND_Y;
+// 4. ลอจิกการอัปเดตเกม
+function update() {
+    // อัปเดตการกระโดด
+    if (isJumping || positionY < GROUND_Y) {
+        positionY += velocityY;
+        velocityY += 1.5; 
+        if (positionY >= GROUND_Y) {
+            positionY = GROUND_Y;
             isJumping = false;
-            jumpVelocity = 0;
+            velocityY = 0;
         }
     }
-}
 
-// 3. จัดการอุปสรรค
-function updateObstacle() {
-    obstacleX--;
-    if (obstacleX < 0) {
-        obstacleX = DISPLAY_WIDTH - 1;
-        score += 10;
-        scoreElement.textContent = score;
+    // อัปเดตสิ่งกีดขวาง
+    obstacleX -= 8; 
+    if (obstacleX < -30) {
+        obstacleX = GAME_WIDTH;
+        score += 1;
+        coins += 5; // ได้เงินทุกครั้งที่ผ่านสิ่งกีดขวาง
+        document.getElementById('score').textContent = score;
+        document.getElementById('coins').textContent = coins;
     }
-}
 
-// 4. ตรวจสอบการชน 
-function checkCollision() {
-    // ตำแหน่ง Dino x=5 ถึง x=8
-    if (obstacleX >= 5 && obstacleX <= 8 && dinoY >= GROUND_Y - 2) {
+    // ตรวจสอบการชน (Hitboxes)
+    const dinoHitbox = { x: 50, y: positionY - 50, w: 50, h: 50 };
+    const obsHitbox = { x: obstacleX, y: GROUND_Y - 30, w: 30, h: 30 };
+
+    if (dinoHitbox.x < obsHitbox.x + obsHitbox.w &&
+        dinoHitbox.x + dinoHitbox.w > obsHitbox.x &&
+        dinoHitbox.y < obsHitbox.y + obsHitbox.h &&
+        dinoHitbox.y + dinoHitbox.h > obsHitbox.y) {
         gameOver();
-        return true;
-    }
-    return false;
-}
-
-// 5. ลูปหลักของเกม
-function gameLoop() {
-    updateJump();
-    updateObstacle();
-
-    if (checkCollision()) {
-        clearInterval(gameLoopInterval);
         return;
     }
-
-    drawScreen();
 }
 
-// 6. การเริ่มต้นและจบเกม
+// 5. ลูปหลัก
+function gameLoop() {
+    update();
+    draw();
+}
+
+// 6. การควบคุมเกม
 function startGame() {
+    if (gameRunning) return;
     score = 0;
-    dinoY = GROUND_Y;
-    isJumping = false;
-    obstacleX = DISPLAY_WIDTH - 1;
-    scoreElement.textContent = score;
-    statusElement.textContent = 'กำลังเล่น...';
-    
-    gameLoopInterval = setInterval(gameLoop, GAME_SPEED);
+    coins = 0;
+    positionY = GROUND_Y;
+    obstacleX = GAME_WIDTH;
+    document.getElementById('score').textContent = score;
+    document.getElementById('coins').textContent = coins;
+    document.getElementById('status').textContent = 'กำลังเล่น...';
+    gameLoopInterval = setInterval(gameLoop, 30);
+    gameRunning = true;
 }
 
 function gameOver() {
-    statusElement.textContent = 'เกมโอเวอร์! กด Spacebar เพื่อเริ่มใหม่';
+    clearInterval(gameLoopInterval);
+    gameLoopInterval = null;
+    gameRunning = false;
+    document.getElementById('status').textContent = 'เกมโอเวอร์! กด Spacebar เพื่อเริ่มใหม่';
 }
 
-// 7. จัดการ Input (Spacebar)
 document.addEventListener('keydown', function(event) {
     if (event.code === 'Space' || event.key === ' ') {
-        event.preventDefault(); 
-        if (!isJumping) {
-            if (gameLoopInterval) {
-                // ถ้าเกมเริ่มแล้ว
-                isJumping = true;
-                jumpVelocity = 7; 
-            } else {
-                // ถ้าเกมจบแล้ว หรือยังไม่เริ่ม
-                startGame();
-            }
+        if (!gameRunning) {
+            startGame();
+        } else if (!isJumping && positionY >= GROUND_Y) {
+            isJumping = true;
+            velocityY = -20;
         }
     }
 });
 
-// เริ่มต้นวาดหน้าจอ
-drawScreen();
+// 7. ลอจิกสำหรับเมนู (Shop/Redeem)
+function openMenu(tabName) {
+    clearInterval(gameLoopInterval); // หยุดเกม
+    document.getElementById('game-menu').style.display = 'block';
+    
+    // ซ่อนเนื้อหาทั้งหมด
+    document.querySelectorAll('.menu-tab').forEach(tab => {
+        tab.style.display = 'none';
+    });
+
+    // แสดงเนื้อหาตามที่เลือก
+    document.getElementById(tabName + '-content').style.display = 'block';
+}
+
+function closeMenu() {
+    document.getElementById('game-menu').style.display = 'none';
+    // ไม่ต้องเริ่มเกมทันที ให้ผู้เล่นกด Spacebar เริ่มเอง
+}
+
+function buyItem(itemId) {
+    if (itemId === 'light_skin' && coins >= 5000) {
+        coins -= 5000;
+        document.getElementById('coins').textContent = coins;
+        alert('ซื้อสกินแสงสำเร็จ! (แต่ยังไม่มีโค้ดเปลี่ยนสกินจริง)');
+    } else {
+        alert('เงินไม่พอ หรือไอเทมไม่มี!');
+    }
+}
+
+function redeemCode() {
+    const code = document.getElementById('redeem-code-input').value.toUpperCase();
+    if (code === 'GEMINI2025') {
+        coins += 10000;
+        document.getElementById('coins').textContent = coins;
+        alert('แลกโค้ดสำเร็จ! ได้รับ 10000 เงิน!');
+    } else {
+        alert('โค้ดไม่ถูกต้อง!');
+    }
+}
