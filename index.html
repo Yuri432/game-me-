@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Runner (Graphic Edition)</title>
+    <title>Arcade Hub: 4 in 1 Games</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,8 +11,8 @@
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="info-bar">
             คะแนน: <span id="score">0</span> | เงิน: <span id="coins">0</span> | สถานะ: <span id="status">กด Spacebar</span>
-            <button onclick="openMenu('shop')">ร้านค้า</button>
-            <button onclick="openMenu('guide')">คู่มือ/ของ</button>
+            <button onclick="openMenu('shop')">ร้านค้าซื้อของ</button>
+            <button onclick="openMenu('game-selector')">เมนูเกม</button> 
         </div>
     </div>
     
@@ -21,23 +21,25 @@
             <span class="close" onclick="closeMenu()">&times;</span>
             
             <div id="shop-content" class="menu-tab">
-                <h2>หน้าซื้อของ (Shop)</h2>
-                <p>ที่นี่คือหน้าสำหรับซื้อสกินตัวละครใหม่ (เช่น สกิน Free Fire)</p>
+                <h2>ร้านค้าซื้อของ (Shop)</h2>
+                <p>ที่นี่คือหน้าสำหรับซื้อสกินตัวละครใหม่และแลกโค้ด</p>
                 <div class="shop-item">
-                    <img src="coin.png" alt="Coin" style="width: 30px;"> สกินแสง (5000 เงิน) <button onclick="buyItem('light_skin')">ซื้อ</button>
+                    สกินแสง (5000 เงิน) <button onclick="buyItem('light_skin')">ซื้อ</button>
                 </div>
                 <div class="shop-item">
                     โค้ดแลกของ: <input type="text" id="redeem-code-input"> <button onclick="redeemCode()">แลกโค้ด</button>
                 </div>
             </div>
 
-            <div id="guide-content" class="menu-tab">
-                <h2>คู่มือเกม / ของต่าง ๆ</h2>
-                <h3>วิธีการเล่น:</h3>
-                <p>กด Spacebar เพื่อกระโดดหลบสิ่งกีดขวาง (ตัว E) พยายามทำคะแนนให้สูงที่สุด</p>
-                <h3>ของต่าง ๆ ในเกม:</h3>
-                <p>เหรียญ: ใช้สำหรับซื้อสกินและไอเทมในร้านค้า</p>
-                <p>สกินตัวละคร: ซื้อได้ที่ร้านค้า เพื่อเปลี่ยนรูปลักษณ์</p>
+            <div id="game-selector-content" class="menu-tab">
+                <h2>เลือกเกม (4 in 1)</h2>
+                <p>คลิกเพื่อเลือกเกมที่คุณต้องการเล่น</p>
+                <div class="game-list">
+                    <button onclick="window.location.href='index.html'">1. Dino Runner (วิ่งกระโดดหลบ)</button><br>
+                    <button onclick="window.location.href='game2.html'">2. เกมทายตัวเลข (Number Guess)</button><br>
+                    <button onclick="window.location.href='game3.html'">3. เกม OX / Tic-Tac-Toe</button><br>
+                    <button onclick="window.location.href='game4.html'">4. เกมรถแข่ง (Car Racing)</button>
+                </div>
             </div>
         </div>
     </div>
