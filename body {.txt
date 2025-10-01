@@ -1,0 +1,26 @@
+body {
+    background-color: #222; /* พื้นหลังสีเข้มเหมือนคอนโซล */
+    color: #eee;
+    font-family: 'Courier New', monospace; /* ฟอนต์แบบ Monospace */
+    text-align: center;
+}
+
+#game-container {
+    width: 800px;
+    margin: 20px auto;
+    border: 2px solid #555;
+    background-color: #000;
+    padding: 10px;
+}
+
+/* ใช้แท็ก <pre> เพื่อให้แสดงช่องว่าง/การจัดบรรทัดอย่างถูกต้อง */
+#game-display {
+    height: 300px; 
+    text-align: left;
+    white-space: pre;
+}
+
+#info-bar {
+    padding: 10px 0;
+    border-top: 1px dashed #555;
+}
