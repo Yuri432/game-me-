@@ -2,15 +2,43 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>Dino Runner (Web Version)</title>
+    <title>Dino Runner (Graphic Edition)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>เกม Dino Runner</h1>
+    <h1>เกม Dino Runner (Graphic Edition)</h1>
     <div id="game-container">
-        <pre id="game-display"></pre>
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
         <div id="info-bar">
-            คะแนน: <span id="score">0</span> | เงิน: <span id="coins">0</span> | สถานะ: <span id="status">กด Spacebar เพื่อเริ่ม</span>
+            คะแนน: <span id="score">0</span> | เงิน: <span id="coins">0</span> | สถานะ: <span id="status">กด Spacebar</span>
+            <button onclick="openMenu('shop')">ร้านค้า</button>
+            <button onclick="openMenu('guide')">คู่มือ/ของ</button>
+        </div>
+    </div>
+    
+    <div id="game-menu" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMenu()">&times;</span>
+            
+            <div id="shop-content" class="menu-tab">
+                <h2>หน้าซื้อของ (Shop)</h2>
+                <p>ที่นี่คือหน้าสำหรับซื้อสกินตัวละครใหม่ (เช่น สกิน Free Fire)</p>
+                <div class="shop-item">
+                    <img src="coin.png" alt="Coin" style="width: 30px;"> สกินแสง (5000 เงิน) <button onclick="buyItem('light_skin')">ซื้อ</button>
+                </div>
+                <div class="shop-item">
+                    โค้ดแลกของ: <input type="text" id="redeem-code-input"> <button onclick="redeemCode()">แลกโค้ด</button>
+                </div>
+            </div>
+
+            <div id="guide-content" class="menu-tab">
+                <h2>คู่มือเกม / ของต่าง ๆ</h2>
+                <h3>วิธีการเล่น:</h3>
+                <p>กด Spacebar เพื่อกระโดดหลบสิ่งกีดขวาง (ตัว E) พยายามทำคะแนนให้สูงที่สุด</p>
+                <h3>ของต่าง ๆ ในเกม:</h3>
+                <p>เหรียญ: ใช้สำหรับซื้อสกินและไอเทมในร้านค้า</p>
+                <p>สกินตัวละคร: ซื้อได้ที่ร้านค้า เพื่อเปลี่ยนรูปลักษณ์</p>
+            </div>
         </div>
     </div>
 
