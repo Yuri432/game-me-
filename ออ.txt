@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เกม OX</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f0f0; }
+        #board { margin: 20px auto; border-collapse: collapse; }
+        #board td { width: 60px; height: 60px; border: 3px solid #333; font-size: 40px; cursor: pointer; line-height: 60px; }
+        #board td:hover { background-color: #ddd; }
+    </style>
+</head>
+<body>
+    <h1>เกม OX / Tic-Tac-Toe</h1>
+    <table id="board">
+        <tr><td id="c0" onclick="makeMove(0)"></td><td id="c1" onclick="makeMove(1)"></td><td id="c2" onclick="makeMove(2)"></td></tr>
+        <tr><td id="c3" onclick="makeMove(3)"></td><td id="c4" onclick="makeMove(4)"></td><td id="c5" onclick="makeMove(5)"></td></tr>
+        <tr><td id="c6" onclick="makeMove(6)"></td><td id="c7" onclick="makeMove(7)"></td><td id="c8" onclick="makeMove(8)"></td></tr>
+    </table>
+    <p id="status">ตา X เล่น</p>
+    <button onclick="resetGame()">เริ่มใหม่</button>
+    <button onclick="window.location.href='index.html'">กลับเมนูเกม</button>
+
+    <script>
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X";
+        let gameActive = true;
+
+        function makeMove(cellIndex) {
+            if (board[cellIndex] === "" && gameActive) {
+                board[cellIndex] = currentPlayer;
+                document.getElementById('c' + cellIndex).textContent = currentPlayer;
+                
+                if (checkWin()) {
+                    document.getElementById('status').textContent = `ผู้เล่น ${currentPlayer} ชนะ!`;
+                    gameActive = false;
+                } else if (board.every(cell => cell !== "")) {
+                    document.getElementById('status').textContent = "เสมอ!";
+                    gameActive = false;
+                } else {
+                    currentPlayer = currentPlayer === "X" ? "O" : "X";
+                    document.getElementById('status').textContent = `ตา ${currentPlayer} เล่น`;
+                }
+            }
+        }
+
+        function checkWin() {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // แนวนอน
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // แนวตั้ง
+                [0, 4, 8], [2, 4, 6]            // แนวทแยง
+            ];
+            return winConditions.some(condition => {
+                const [a, b, c] = condition;
+                return board[a] !== "" && board[a] === board[b] && board[b] === board[c];
+            });
+        }
+
+        function resetGame() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            currentPlayer = "X";
+            gameActive = true;
+            document.getElementById('status').textContent = "ตา X เล่น";
+            for (let i = 0; i < 9; i++) {
+                document.getElementById('c' + i).textContent = "";
+            }
+        }
+    </script>
+</body>
+</html>
